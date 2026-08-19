@@ -7,6 +7,7 @@ import io.github.jason13official.golden_foods.impl.common.registry.ModMenus;
 import io.github.jason13official.golden_foods.impl.common.registry.ModParticles;
 import io.github.jason13official.golden_foods.impl.common.registry.ModTabs;
 import io.github.jason13official.golden_foods.impl.common.registry.ModTiles;
+import io.github.jason13official.golden_foods.impl.common.util.EnchantedGoldenFoodCreationMethod;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.Registry;
@@ -16,6 +17,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -23,7 +26,9 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.AnvilUpdateEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import oshi.util.tuples.Triplet;
 
 @Mod(Constants.MOD_ID)
 public class GoldenFoodsNeoForge {
@@ -44,12 +49,25 @@ public class GoldenFoodsNeoForge {
 
     EVENT_BUS.addListener((Consumer<FMLCommonSetupEvent>) event -> GoldenFoods.init());
 
+    NeoForge.EVENT_BUS.addListener(this::onAnvilUpdate);
+
     NeoForge.EVENT_BUS.addListener((Consumer<AddServerReloadListenersEvent>) event -> {
       event.addListener(GoldenFoods.identifier(Constants.MOD_ID), new ResourceReloadListener());
     });
 
     if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {
       new GoldenFoodsClientNeoForge(EVENT_BUS);
+    }
+  }
+
+  public void onAnvilUpdate(final AnvilUpdateEvent event) {
+
+    final Triplet<Integer, Integer, ItemStack> triplet = EnchantedGoldenFoodCreationMethod.createGoldenFoods((AnvilMenu) null, event.getLeft(), event.getRight(), event.getOutput(), event.getName(), event.getXpCost(), event.getPlayer());
+
+    if (triplet != null && triplet.getC() != ItemStack.EMPTY) {
+      event.setXpCost(triplet.getA());
+      event.setMaterialCost(triplet.getB());
+      event.setOutput(triplet.getC());
     }
   }
 

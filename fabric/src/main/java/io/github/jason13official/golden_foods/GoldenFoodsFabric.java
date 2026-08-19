@@ -7,9 +7,13 @@ import io.github.jason13official.golden_foods.impl.common.registry.ModMenus;
 import io.github.jason13official.golden_foods.impl.common.registry.ModParticles;
 import io.github.jason13official.golden_foods.impl.common.registry.ModTabs;
 import io.github.jason13official.golden_foods.impl.common.registry.ModTiles;
+import io.github.jason13official.golden_foods.impl.common.util.EnchantedGoldenFoodCreationMethod;
+import io.github.jason13official.monolib.impl.common.event.MonoLibFabricAnvilMenuEvents;
+import io.github.jason13official.monolib.impl.common.event.MonoLibFabricAnvilMenuEvents.AnvilMenuResult;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.impl.resource.DataResourceLoaderImpl;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,7 +38,14 @@ public class GoldenFoodsFabric implements ModInitializer {
 
     GoldenFoods.init();
 
-    DataResourceLoaderImpl.get(PackType.SERVER_DATA).registerReloadListener(GoldenFoods.identifier(Constants.MOD_ID), new ResourceReloadListener());
+    // MonoLibFabricAnvilMenuEvents.CREATE_RESULT.register(EnchantedGoldenFoodCreationMethod::createGoldenFoods);
+    MonoLibFabricAnvilMenuEvents.CREATE_RESULT.register((anvilMenu, itemStack, itemStack1, itemStack2, s, i, player) -> {
+
+      var result = EnchantedGoldenFoodCreationMethod.createGoldenFoods(anvilMenu, itemStack, itemStack1, itemStack2, s, i, player);
+
+      return new AnvilMenuResult(result.getA(), result.getB(), result.getC());
+    });
+    ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(GoldenFoods.identifier(Constants.MOD_ID), new ResourceReloadListener());
   }
 
   public <T> void bind(Registry<T> registry, Consumer<BiConsumer<T, Identifier>> source) {
