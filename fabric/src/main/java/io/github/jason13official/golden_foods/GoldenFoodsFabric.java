@@ -42,6 +42,7 @@ public class GoldenFoodsFabric implements ModInitializer {
     MonoLibFabricAnvilMenuEvents.CREATE_RESULT.register((anvilMenu, itemStack, itemStack1, itemStack2, s, i, player) -> {
 
       var result = EnchantedGoldenFoodCreationMethod.createGoldenFoods(anvilMenu, itemStack, itemStack1, itemStack2, s, i, player);
+      if (result == null) return null;
 
       return new AnvilMenuResult(result.getA(), result.getB(), result.getC());
     });
